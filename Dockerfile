@@ -50,7 +50,7 @@ RUN mkdir -p /nomad/data && \
 # Client mode has some default configuration that's good for running in containers,
 # namely agents will leave the cluster if you stop the container. This isn't
 # usually desirable for servers so we don't include it there.
-COPY client.json /nomad/config/client
+COPY client.json /nomad/config/client/
 
 # Expose the nomad data directory as a volume since there's mutable state in there.
 VOLUME /nomad/data
