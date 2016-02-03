@@ -30,6 +30,7 @@ elif [ "$1" = 'client' ]; then
     shift
     gosu nomad \
         nomad agent \
+         -client \
          -data-dir="$NOMAD_DATA_DIR" \
          -config="$NOMAD_CONFIG_DIR/client" \
          -config="$NOMAD_CONFIG_DIR/local" \
