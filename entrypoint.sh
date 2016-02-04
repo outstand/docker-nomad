@@ -40,6 +40,11 @@ addresses {
 EOF
 fi
 
+NOMAD_SERVERS_OPT=
+if [ -n "$NOMAD_SERVERS" ]; then
+  NOMAD_SERVERS_OPT="-servers=$NOMAD_SERVERS"
+fi
+
 # Nomad's docker driver needs access to the docker socket.  We don't know what
 # the gid of the docker group in the host is so we figure it out here.
 if [ -S /var/run/docker.sock ]; then
@@ -73,6 +78,7 @@ elif [ "$1" = 'client' ]; then
          -config="$NOMAD_CONFIG_DIR/client" \
          -config="$NOMAD_CONFIG_DIR/local" \
          $NOMAD_BIND \
+         $NOMAD_SERVERS_OPT \
          "$@"
 elif [ "$1" = 'server' ]; then
     shift
