@@ -16,7 +16,7 @@ debecho () {
 NOMAD_BIND=
 if [ -n "$NOMAD_BIND_INTERFACE" ]; then
   debecho "NOMAD_BIND_INTERFACE=$NOMAD_BIND_INTERFACE"
-  debecho "$(ip addr $NOMAD_BIND_INTERFACE)"
+  debecho "$(ip -4 addr list $NOMAD_BIND_INTERFACE)"
   NOMAD_BIND_ADDRESS=$(ip -o -4 addr list $NOMAD_BIND_INTERFACE | awk '{print $4}' | cut -d/ -f1)
   if [ -z "$NOMAD_BIND_ADDRESS" ]; then
     echo "Network interface $NOMAD_BIND_INTERFACE has no ip address, exiting."
