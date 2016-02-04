@@ -54,7 +54,19 @@ if [ -S /var/run/docker.sock ]; then
     groupadd -g $GID docker
   fi
   usermod -a -G $GID nomad
+
+  # Guarantee that we can talk to docker or nomad will start anyway
+  # but won't be able to do anything.
+  socat - UNIX-CONNECT:/var/run/docker.sock <<EOF
+GET /info HTTP/1.1
+
+EOF
+  if [ $? -ne 0 ]; then
+    echo 'Failed to connect to /var/run/docker.sock, exiting.'
+    exit 1
+  fi
 fi
+
 
 # This exposes three different modes, and allows for the execution of arbitrary
 # commands if one of these modes isn't chosen. Each of the modes will read from
