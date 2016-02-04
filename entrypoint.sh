@@ -23,7 +23,7 @@ if [ -n "$NOMAD_BIND_INTERFACE" ]; then
     exit 1
   fi
   debecho "NOMAD_BIND_ADDRESS=$NOMAD_BIND_ADDRESS"
-  NOMAD_BIND="-bind=$NOMAD_BIND_ADDRESS -network_interface=$NOMAD_BIND_INTERFACE"
+  NOMAD_BIND="-bind=$NOMAD_BIND_ADDRESS -network-interface=$NOMAD_BIND_INTERFACE"
 fi
 
 debecho "NOMAD_BIND=$NOMAD_BIND"
@@ -62,6 +62,7 @@ if [ "$1" = 'dev' ]; then
         nomad agent \
          -dev \
          -config="$NOMAD_CONFIG_DIR/local" \
+         $NOMAD_BIND \
          "$@"
 elif [ "$1" = 'client' ]; then
     shift
@@ -71,6 +72,7 @@ elif [ "$1" = 'client' ]; then
          -data-dir="$NOMAD_DATA_DIR" \
          -config="$NOMAD_CONFIG_DIR/client" \
          -config="$NOMAD_CONFIG_DIR/local" \
+         $NOMAD_BIND \
          "$@"
 elif [ "$1" = 'server' ]; then
     shift
@@ -80,6 +82,7 @@ elif [ "$1" = 'server' ]; then
          -data-dir="$NOMAD_DATA_DIR" \
          -config="$NOMAD_CONFIG_DIR/server" \
          -config="$NOMAD_CONFIG_DIR/local" \
+         $NOMAD_BIND \
          "$@"
 else
     exec "$@"
