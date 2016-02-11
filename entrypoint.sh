@@ -45,6 +45,11 @@ if [ -n "$NOMAD_SERVERS" ]; then
   NOMAD_SERVERS_OPT="-servers=$NOMAD_SERVERS"
 fi
 
+if [ -n "$NOMAD_REQUIRE_DOCKER" ] && [ ! -S /var/run/docker.sock ]; then
+  echo 'Docker socket not found, exiting.'
+  exit 1
+fi
+
 # Nomad's docker driver needs access to the docker socket.  We don't know what
 # the gid of the docker group in the host is so we figure it out here.
 if [ -S /var/run/docker.sock ]; then
@@ -57,7 +62,7 @@ if [ -S /var/run/docker.sock ]; then
 
   # Guarantee that we can talk to docker or nomad will start anyway
   # but won't be able to do anything.
-  socat - UNIX-CONNECT:/var/run/docker.sock <<EOF
+  socat - UNIX-CONNECT:/var/run/docker.sock >/dev/null <<EOF
 GET /info HTTP/1.1
 
 EOF

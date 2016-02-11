@@ -4,6 +4,7 @@ MAINTAINER Ryan Schlesinger <ryan@outstand.com>
 RUN apt-get update && apt-get install -y --no-install-recommends \
     locales \
     unzip \
+    socat \
   && rm -rf /var/lib/apt/lists/*
 
 # grab gosu for easy step-down from root
