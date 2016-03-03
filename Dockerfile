@@ -1,40 +1,41 @@
 FROM buildpack-deps:jessie-curl
+# alpine doesn't current work due to https://bugs.alpinelinux.org/issues/5130
+#FROM frolvlad/alpine-glibc
 MAINTAINER Ryan Schlesinger <ryan@outstand.com>
 
+# Comment out for alpine
 RUN apt-get update && apt-get install -y --no-install-recommends \
     locales \
     unzip \
     socat \
   && rm -rf /var/lib/apt/lists/*
 
-# grab gosu for easy step-down from root
-RUN gpg --keyserver pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4
-RUN curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.7/gosu-$(dpkg --print-architecture)" \
-  && curl -o /usr/local/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/1.7/gosu-$(dpkg --print-architecture).asc" \
-  && gpg --verify /usr/local/bin/gosu.asc \
-  && rm /usr/local/bin/gosu.asc \
-  && chmod +x /usr/local/bin/gosu
+# This is the release of Consul to pull in.
+ENV NOMAD_VERSION=0.3.0
+ENV NOMAD_SHA256SUM=530e5177cecd65d36102953099db19ecdbfa62b3acf20a0c48e20753a597f28e
 
-RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.0.0/dumb-init_1.0.0_amd64.deb
-RUN dpkg -i dumb-init_*.deb
-
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+# This is the release of https://github.com/hashicorp/docker-base to pull in order
+# to provide HashiCorp-built versions of basic utilities like dumb-init and gosu.
+ENV DOCKER_BASE_VERSION=0.0.4
+ENV DOCKER_BASE_SHA256SUM=5262aa8379782d42f58afbda5af884b323ff0b08a042e7915eb1648891a8da00
 
 # Create a nomad user and group first so the IDs get set the same way, even as
 # the rest of this may change over time.
+# RUN addgroup nomad && \
+#     adduser -S -G nomad nomad
+# Comment out for alpine
 RUN useradd -ms /bin/bash nomad
 
-# Pull down the Nomad binary. BusyBox has a non-SSL capable wget so we use the host
-# to fetch the file and verify inside the container.
-ENV NOMAD_SHA256 0f3a7083d160893a291b5f8b4359683c2df7991fa0a3e969f8785ddb40332a8c
-ADD https://releases.hashicorp.com/nomad/0.2.3/nomad_0.2.3_linux_amd64.zip /nomad.zip
-
-# Pull down and verify the nomad binary.
-RUN set -x && \
-    echo "${NOMAD_SHA256}  nomad.zip" | sha256sum -c - && \
+# Set up certificates, our base tools, and Nomad.
+# uncomment for alpine
+#RUN apk add --no-cache ca-certificates socat && \
+RUN    cd /tmp && \
+    wget -O docker-base.zip https://releases.hashicorp.com/docker-base/${DOCKER_BASE_VERSION}/docker-base_${DOCKER_BASE_VERSION}_linux_amd64.zip && \
+    echo "${DOCKER_BASE_SHA256SUM}  docker-base.zip" | sha256sum -c && \
+    unzip -d / docker-base.zip && \
+    rm docker-base.zip && \
+    wget -O nomad.zip https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip && \
+    echo "${NOMAD_SHA256SUM}  nomad.zip" | sha256sum -c && \
     unzip -d /bin nomad.zip && \
     rm nomad.zip
 
